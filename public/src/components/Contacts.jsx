@@ -4,6 +4,7 @@ import { getLastMessagesRoute } from "../utils/APIRoutes";
 export default function Contacts({ contacts, changeChat }) {
   const [currentUserName, setCurrentUserName] = useState(undefined);
   const [currentUser, setCurrentUser] = useState(undefined);
+  const [users, setUsers] = useState(undefined);
   const [currentSelected, setCurrentSelected] = useState(undefined);
 
   useEffect(() => {
@@ -22,32 +23,34 @@ export default function Contacts({ contacts, changeChat }) {
     changeChat(contact);
   };
   const getlastmsgByUser = async (user) => {
-    const lastm = await axios.post(getLastMessagesRoute, {
-      from: user,
-      to: currentUser._id,
-    });
-    var lastmsgByUser = lastm.data[0].message.text;
-    if (lastmsgByUser.slice(0, 10) === 'data:image') {
-      lastmsgByUser = 'Imagen'
+    if (currentUser) {
+      const lastm = await axios.post(getLastMessagesRoute, {
+        from: user,
+        to: currentUser.id,
+      });
+      var lastmsgByUser = lastm.data.data[0].mesa_text;
+      if (lastmsgByUser.slice(0, 10) === 'data:image') {
+        lastmsgByUser = 'Imagen'
+      }
+      const datetimeContactChat = lastm.data.data[0].mesa_sendedAt;
+      
+      const d = new Date(datetimeContactChat);
+      const d_time = d.getHours() + ":" + d.getMinutes();
+      const d_date = d.getDate() + "/" + d.getMonth();
+  
+      const now = new Date();
+      const now_date = now.getDate() + "/" + now.getMonth();
+  
+      var datetimechat = d_time + ' ' + d_date;
+  
+      if (d_date === now_date) {
+        datetimechat = d_time;
+      }else{
+      }
+      const time = d.getHours() + ":" + d.getMinutes() +' '+ d.getDate() + "/" + d.getMonth();
+      document.getElementById('msg'+user+'').innerHTML = lastmsgByUser
+      document.getElementById('dtc'+user+'').innerHTML = datetimechat
     }
-    const datetimeContactChat = lastm.data[0].updatedAt;
-    
-    const d = new Date(datetimeContactChat);
-    const d_time = d.getHours() + ":" + d.getMinutes();
-    const d_date = d.getDate() + "/" + d.getMonth();
-
-    const now = new Date();
-    const now_date = now.getDate() + "/" + now.getMonth();
-
-    var datetimechat = d_time + ' ' + d_date;
-
-    if (d_date === now_date) {
-      datetimechat = d_time;
-    }else{
-    }
-    const time = d.getHours() + ":" + d.getMinutes() +' '+ d.getDate() + "/" + d.getMonth();
-    document.getElementById('msg'+user+'').innerHTML = lastmsgByUser
-    document.getElementById('dtc'+user+'').innerHTML = datetimechat
   }
   return (
     <div className="contacts">
@@ -62,9 +65,9 @@ export default function Contacts({ contacts, changeChat }) {
             onClick={() => changeCurrentChat(index, contact)}
           >
             <div className="profilepic">
-              <span>{contact.name.substring(0,2).toLowerCase()}</span>
+              <span>{contact.user_name.substring(0,2).toLowerCase()}</span>
               {
-                contact.isActive === true ? 
+                contact.user_online === 1 ? 
                 <span style={{
                   width: '12px',
                   height: '12px',
@@ -79,7 +82,7 @@ export default function Contacts({ contacts, changeChat }) {
               }
             </div>
             <div className="username">
-              <b>{contact.name}</b>
+              <b>{contact.user_name}</b>
               <span id={`msg${contact._id}`}>...ultimo mensaje</span>
             </div>
             <div className="chattime">

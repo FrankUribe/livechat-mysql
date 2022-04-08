@@ -37,7 +37,7 @@ export default function Live() {
       return false
     } else {
       setCurrentUser(JSON.parse(localStorage.getItem('chatUser')));
-      const pk = JSON.parse(localStorage.getItem('chatUser'))._id
+      const pk = JSON.parse(localStorage.getItem('chatUser')).id
       axios.post(updateIsActiveRoute, {
         id: pk,
         status: 1,
@@ -50,13 +50,13 @@ export default function Live() {
 
   const handleisActive = async () => {
     await axios.post(updateIsActiveRoute, {
-      id: currentUser._id,
+      id: currentUser.id,
       status: 1,
     })
   };
   const handleisNotActive = async () => {
     await axios.post(updateIsActiveRoute, {
-      id: currentUser._id,
+      id: currentUser.id,
       status: 0,
     })
   };
@@ -80,15 +80,6 @@ export default function Live() {
     message += emoji.emoji;
     setMsg(message)
   }
-  useEffect(async () => {
-    if (currentUser) {
-      const response = await axios.post(getMessagesRoute, {
-        from: currentUser._id,
-        to: adminUser._id,
-      });
-      setMessages(response.data);
-    }
-  }, [adminUser])
 
   useEffect(() => {
     const getAdmin = async () => {
@@ -101,6 +92,16 @@ export default function Live() {
     }
     getAdmin()
   },[])
+  
+  useEffect(async () => {
+    if (currentUser) {
+      const response = await axios.post(getMessagesRoute, {
+        from: currentUser.id,
+        to: adminUser,
+      });
+      setMessages(response.data);
+    }
+  }, [adminUser])
   
   const handleAddToMsgHideShow = () => {
     if (stateAddToMsg===true) {
@@ -181,11 +182,11 @@ export default function Live() {
   const handleSendMsg = async (msg) => {
     await axios.post(sendMessageRoute, {
       from: currentUser.id,
-      to: adminUser.id,
+      to: adminUser,
       message: msg,
     });
     socket.current.emit("send-msg", {
-      to: adminUser.id,
+      to: adminUser,
       from: currentUser.id,
       message: msg,
     })
@@ -203,7 +204,7 @@ export default function Live() {
   const sendIniciarMsg = async (user) => {
     await axios.post(sendMessageRoute, {
       from: user.id,
-      to: adminUser.id,
+      to: adminUser,
       message: "Iniciar",
     });
     const msgs = [...messages]
@@ -226,7 +227,7 @@ export default function Live() {
 
   const sendWellcomeMsg = async (user) => {
     await axios.post(sendMessageRoute, {
-      from: adminUser.id,
+      from: adminUser,
       to: user.id,
       message: "Hola "+user.name+" un asistente se unirá al chat en breve 😃",
     });
@@ -245,7 +246,7 @@ export default function Live() {
   useEffect(() => {
     if (currentUser) {
       socket.current = io(host);
-      socket.current.emit("add-user", currentUser._id);
+      socket.current.emit("add-user", currentUser.id);
 
       const d = new Date();
       const time = d.getHours() + ":" + d.getMinutes();

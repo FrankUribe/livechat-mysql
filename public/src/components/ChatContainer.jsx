@@ -37,7 +37,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
   useEffect(async () => {
     if (currentUser) {
       const response = await axios.post(getMessagesRoute, {
-        from: currentUser._id,
+        from: currentUser.id,
         to: currentChat._id,
       });
       setMessages(response.data);
@@ -61,6 +61,8 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
   const handleEmojiPickerHideShow = () => {
     setShowEmojiPicker(!showEmojiPicker)
   }
+
+  //click boton +, estilos
   const handleAddToMsgHideShow = () => {
     if (stateAddToMsg===true) {
       addToMsg.current.style.display = 'none'
@@ -74,10 +76,12 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
     }
     setStateAddToMsg(!stateAddToMsg)
   }
+
   //funcion al presionar caja de texto, cierra modal emoji
   const handleEmojiPickerHide = () => {
     setShowEmojiPicker(false)
   }
+
   //funcion seleccionar emoji, lo setea al mensaje
   const handleEmojiClick = (event, emoji) => {
     let message = msg;
@@ -95,18 +99,19 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
       textInput.current.focus();
     }
   };
+
   //funcion enviar mensaje asincrona
   const handleSendMsg = async (msg) => {
     //backend axios envia mensaje
     await axios.post(sendMessageRoute, {
-      from: currentUser._id,
+      from: currentUser.id,
       to: currentChat._id,
       message: msg,
     });
     //socket emite send-msg
     socket.current.emit("send-msg", {
       to: currentChat._id,
-      from: currentUser._id,
+      from: currentUser.id,
       message: msg,
     })
     //añadimos el mensaje nuevo a la variable array messages
@@ -129,13 +134,13 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
     if (currentChat) {
       const lastm = await axios.post(getLastMessagesRoute, {
         from: currentChat._id,
-        to: currentUser._id,
+        to: currentUser.id,
       });
-      var lastmsgByUser = lastm.data[0].message.text;
+      var lastmsgByUser = lastm.data.data[0].mesa_text;
       if (lastmsgByUser.slice(0, 10) === 'data:image') {
         lastmsgByUser = 'Imagen'
       }
-      const datetimeContactChat = lastm.data[0].updatedAt;
+      const datetimeContactChat = lastm.data.data[0].mesa_sendedAt;
       //obtenemos los valores y los damos segun el id
       const d = new Date(datetimeContactChat);
       const d_time = d.getHours() + ":" + d.getMinutes();
@@ -162,6 +167,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
       socket.current.on("msg-recieve", (msg) => {
         setArrivalMessage({fromSelf:false, message: msg, datetime: time })
       })
+    }else{
     }
   }, [])
 
@@ -195,19 +201,20 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
       setTimeout(() => {
         toast.success(data.msg, toastOptions)
       }, 1000);
-      currentChat.name = chatData.name
+      currentChat.user_name = chatData.name
     }else{
       toast.error('Ha ocurrido un error', toastOptions)
     }
   }
 
-  
+  //seteamos imagen
   const uploadImage = async (e) => {
     const file = e.target.files[0];
     const base64 = await convertBase64(file);
     setBaseImage(base64);
   };
 
+  //conertimos imagen a base 64
   const convertBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader();
@@ -223,6 +230,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
     });
   };
 
+  //funcion arir cerrar modal imagen
   const handleImgHideShow = () => {
     if (stateImgToMsg===true) {
       imageToMsg.current.style.display = 'none'
@@ -233,6 +241,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
     setStateImgToMsg(!stateImgToMsg)
   }
   
+  //funcion enviar mensaje
   const handleSendImgMsg = () => {
     handleSendMsg(baseImage)
     handleImgHideShow()
@@ -245,10 +254,10 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
       <div className="chatContainerAdmin">
         <div className="chat-header">
           <div className="avatar">
-              <span>{currentChat.name.substring(0,2).toLowerCase()}</span>
+              <span>{currentChat.user_name.substring(0,2).toLowerCase()}</span>
           </div>
           <div className="username">
-            <b>{currentChat.name}</b>
+            <b>{currentChat.user_name}</b>
           </div>
           <button onClick={() => setModal(true)} className="modalContactDetails"><IoEllipsisVertical/></button>      
         </div>
@@ -312,10 +321,10 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
       </div>
       <div className="contactDetails">
         <div className="avatar">
-          <b>{chatData.name.substring(0,2).toLowerCase()}</b>
+          <b>{chatData.user_name.substring(0,2).toLowerCase()}</b>
         </div>
         <div className="username">
-          <h4><input className="inputr" name="name" value={chatData.name}
+          <h4><input className="inputr" name="user_name" value={chatData.user_name}
               style={{
                 width: '100%',
                 textAlign: 'center',
@@ -328,7 +337,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
               onChange={(e)=>handleChangeChatData(e)}/></h4>
         </div>
         <div className="email">
-          <span><input className="inputr" name="email" value={chatData.email} 
+          <span><input className="inputr" name="user_email" value={chatData.user_email} 
                 style={{
                   width: '100%',
                   textAlign: 'center',
@@ -345,15 +354,15 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
             <tbody>
               <tr>
                 <td width='80px'>Telefono</td>
-                <td><input className="inputr" name="phone" value={chatData.phone} onChange={(e)=>handleChangeChatData(e)}/></td>
+                <td><input className="inputr" name="user_phone" value={chatData.user_phone} onChange={(e)=>handleChangeChatData(e)}/></td>
               </tr>
               <tr>
                 <td width='80px'>Pais</td>
-                <td><input className="inputr" name="country" value={chatData.country} onChange={(e)=>handleChangeChatData(e)}/></td>
+                <td><input className="inputr" name="user_country" value={chatData.user_country} onChange={(e)=>handleChangeChatData(e)}/></td>
               </tr>
               <tr>
                 <td width='80px'>Ciudad</td>
-                <td><input className="inputr" name="city" value={chatData.city} onChange={(e)=>handleChangeChatData(e)}/></td>
+                <td><input className="inputr" name="user_city" value={chatData.user_city} onChange={(e)=>handleChangeChatData(e)}/></td>
               </tr>
             </tbody>
           </table>
@@ -364,30 +373,30 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
       <Modal show={modal}>
         <div className="modal-dialog" style={{width: '300px'}}>
           <ModalHeader>
-            <h4>{currentChat.name} &nbsp; <button className="btn-sm"><IoPencil/></button></h4>
+            <h4>{currentChat.user_name} &nbsp; <button className="btn-sm"><IoPencil/></button></h4>
           </ModalHeader>
           <ModalBody>
           <table width='100%'>
             <tbody>
               <tr>
                 <td width='80px'>Nombre</td>
-                <td><input className="inputr" name="name" value={chatData.name} onChange={(e)=>handleChangeChatData(e)}/></td>
+                <td><input className="inputr" name="user_name" value={chatData.user_name} onChange={(e)=>handleChangeChatData(e)}/></td>
               </tr>
               <tr>
                 <td width='80px'>Correo</td>
-                <td><input className="inputr" name="email" value={chatData.email} onChange={(e)=>handleChangeChatData(e)}/></td>
+                <td><input className="inputr" name="user_email" value={chatData.user_email} onChange={(e)=>handleChangeChatData(e)}/></td>
               </tr>
               <tr>
                 <td width='80px'>Telefono</td>
-                <td><input className="inputr" name="phone" value={chatData.phone} onChange={(e)=>handleChangeChatData(e)}/></td>
+                <td><input className="inputr" name="user_phone" value={chatData.user_phone} onChange={(e)=>handleChangeChatData(e)}/></td>
               </tr>
               <tr>
                 <td width='80px'>Pais</td>
-                <td><input className="inputr" name="country" value={chatData.country} onChange={(e)=>handleChangeChatData(e)}/></td>
+                <td><input className="inputr" name="user_country" value={chatData.user_country} onChange={(e)=>handleChangeChatData(e)}/></td>
               </tr>
               <tr>
                 <td width='80px'>Ciudad</td>
-                <td><input className="inputr" name="city" value={chatData.city} onChange={(e)=>handleChangeChatData(e)}/></td>
+                <td><input className="inputr" name="user_city" value={chatData.user_city} onChange={(e)=>handleChangeChatData(e)}/></td>
               </tr>
             </tbody>
           </table>

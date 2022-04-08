@@ -35,12 +35,12 @@ export default function Admin() {
     }
     consultUserLocalStorage();
   }, []);
-  
+
   //traer contactos
   const fetchContacts = async () => {
     if (currentUser) {
-      const data = await axios.get(`${allUsersRoute}/${currentUser._id}`);
-      setContacts(data.data);
+      const data = await axios.get(`${allUsersRoute}/${currentUser.id}`);
+      setContacts(data.data.result);
     }
   }
 
@@ -53,7 +53,7 @@ export default function Admin() {
   useEffect(() => {
     if (currentUser) {
       socket.current = io(host);
-      socket.current.emit("add-user", currentUser._id);
+      socket.current.emit("add-user", currentUser.id);
 
       socket.current.on("msg-recieve", () => {
         fetchContacts()
@@ -85,7 +85,7 @@ export default function Admin() {
     return () => {
         window.removeEventListener('click', clickOutsideContent);
     };
-  }, []) 
+  }, [])
 
   //funcion cambio de chat
   const handleChatChange = (chat) => {
@@ -121,7 +121,7 @@ export default function Admin() {
           </div>
         </div>
       </div>
-      
+
       <Modal show={modal}>
         <div className="modal-dialog" style={{width: '300px'}}>
           <ModalHeader>

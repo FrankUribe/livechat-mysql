@@ -1,6 +1,5 @@
-const User = require("../model/userModel");
+const bcrypt = require("bcrypt");
 const mysql = require('mysql');
-const bcrypt = require("bcrypt")
 const connection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
@@ -54,8 +53,6 @@ module.exports.getAdminUser = async (req, res, next) => {
         }
       }
     });
-    
-    // delete user.password;
   } catch (error) {
     next(error)
   }
@@ -88,27 +85,28 @@ module.exports.newChatUser = async (req, res, next) => {
 
 module.exports.getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find({ _id: { $ne: req.params.id } }).select([
-      "email",
-      "name",
-      "_id",
-      "isActive",
-      "phone",
-      "country",
-      "city",
-    ]).sort({ _id: -1 });
-    return res.json(users);
+    const sql = "SELECT _id, user_email, user_name, user_country, user_city, user_phone, user_online "+
+                "FROM tb_users WHERE _id != '"+req.params.id+"' ORDER BY user_createdAt DESC";
+    connection.query(sql, (error, result) => {
+      if (error) {
+        return res.json({ msg: "Error en el servidor", status: false });
+      }else{
+        if (result.length <= 0) {
+          return res.json({ msg: "No hay usuarios", status: false });
+        }else{
+          return res.json({ result, status: true });
+        }
+      }
+    });
   } catch (error) {
     next(error)
   }
 };
 
-module.exports.updateIsActive = async (req, res, next) => {
+module.exports.updateIsActive = (req, res, next) => {
   try {
     const { id, status } = req.body;
-    await User.updateOne({ _id: id }, { isActive: status })
-    
-    connection.query("UPDATE tb_users SET user_online = "+status+" WHERE _id = "+id+"");
+    connection.query("UPDATE tb_users SET user_online = "+status+" WHERE _id = '"+id+"'");
   } catch (error) {
     next(error)
   }
@@ -117,15 +115,15 @@ module.exports.updateIsActive = async (req, res, next) => {
 module.exports.updateChatUser = async (req, res, next) => {
   try {
     const { id, name, email, phone, country, city } = req.body;
-    const user = await User.updateOne({ _id: id }, {
-      email: email,
-      name: name,
-      phone: phone,
-      country: country,
-      city: city,
-    })
-    if (user)
-      return res.json({ msg: "Los datos se han actualizado exitosamente", status: true });
+    const sql = "UPDATE tb_users SET user_email='"+email+"', user_name='"+name+"', user_country='"+country+"', user_city='"+city+"', user_phone='"+phone+"', user_online "+
+                "WHERE _id != '"+id+"'";
+    connection.query(sql, error => {
+      if (error) {
+        return res.json({ msg: "Error en el servidor", status: false });
+      }else{
+        return res.json({ msg: "Los datos se han actualizado exitosamente", status: true });
+      }
+    });
   } catch (error) {
     next(error)
   }
