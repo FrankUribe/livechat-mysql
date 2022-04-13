@@ -9,6 +9,7 @@ import { useState, useEffect, useRef } from "react";
 import Modal, { ModalHeader, ModalBody, ModalFooter } from '../components/modal';
 import Contacts from '../components/Contacts';
 import ChatContainer from '../components/ChatContainer';
+import Config from './Config';
 import { allUsersRoute, host } from "../utils/APIRoutes";
 
 export default function Admin() {
@@ -19,6 +20,7 @@ export default function Admin() {
   const [modal, setModal] = useState(false)
   const [currentChat, setCurrentChat] = useState(undefined);
   const [contacts, setContacts] = useState([]);
+  const [view, setView] = useState("chat");
 
   //consultamos si existe el usuario admin con la variable authUser
   useEffect(() => {
@@ -92,23 +94,22 @@ export default function Admin() {
     setCurrentChat(chat);
   };
 
-  return (
-    isLog ? (
-      <>
-      <div className="adminContainer">
-        <div className="adminBox">
-          <div className="panel">
-            <div className="headerPanel">
-              <ul>
-                <li><img src={iconCcip} alt="Logo CCIP" /></li>
-                {/* <li className='panel-icon'><IoChatbubbles/></li> */}
-                {/* <li className='panel-icon'><IoSettingsSharp/></li> */}
-              </ul>
-            </div>
-            <div className="footerPanel">
-              <button onClick={() => setModal(true)}><IoLogOut/></button>
-            </div>
-          </div>
+
+  const handleView = (val) => {
+    const panelicons = document.querySelectorAll("li.panel-icon")
+    panelicons.forEach((icon) => {
+      icon.style.color = "#aaaaaa"
+    });
+    const pi = document.querySelector(".pi-"+val+"");
+    pi.style.color = "#007dff";
+    setView(val)
+  }
+  //retorno de vistas
+  const returnView = () => {
+    switch(view) {
+      case "chat": 
+        return (
+          <>
           <div className="options">
             <Contacts contacts={contacts} changeChat={handleChatChange}/>
           </div>
@@ -119,6 +120,34 @@ export default function Admin() {
               <ChatContainer currentChat={currentChat} currentUser={currentUser} socket={socket} fetchContacts={fetchContacts()}/>
             )}
           </div>
+          </>
+        )
+      case "config":
+        return (
+          <Config/>
+        )
+
+      default: return <h1>No project match</h1>
+    }
+  }
+  return (
+    isLog ? (
+      <>
+      <div className="adminContainer">
+        <div className="adminBox">
+          <div className="panel">
+            <div className="headerPanel">
+              <ul>
+                <li><img src={iconCcip} alt="Logo CCIP" /></li>
+                <li className='panel-icon pi-chat' onClick={()=>{handleView("chat")}}><IoChatbubbles/></li>
+                <li className='panel-icon pi-config' onClick={()=>{handleView("config")}}><IoSettingsSharp/></li>
+              </ul>
+            </div>
+            <div className="footerPanel">
+              <button onClick={() => setModal(true)}><IoLogOut/></button>
+            </div>
+          </div>
+          {returnView()}
         </div>
       </div>
 

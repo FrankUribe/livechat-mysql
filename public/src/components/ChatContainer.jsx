@@ -3,7 +3,7 @@ import { IoSend, IoHappy, IoEllipsisVertical, IoPencil, IoAdd, IoCamera } from "
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import Picker from 'emoji-picker-react';
-import { getMessagesRoute, sendMessageRoute, getLastMessagesRoute, updateChatUserRoute } from "../utils/APIRoutes";
+import { getMessagesRoute, sendMessageRoute, getLastMessagesRoute, updateChatUserRoute, addReraByShortRoute } from "../utils/APIRoutes";
 import Modal, { ModalHeader, ModalBody, ModalFooter } from '../components/modal';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -23,6 +23,8 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
   const [modal, setModal] = useState(false)
   const [chatData, setChatData] = useState(currentChat)
   const [baseImage, setBaseImage] = useState("");
+  const resrapidOptions = useRef();
+  const [shorts, setShorts] = useState(undefined)
   const toastOptions = {
     position: "top-right",
     autoClose: 4000,
@@ -93,7 +95,8 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
   const sendChat = (event) => {
     event.preventDefault();
     if (msg.length > 0) {
-      handleSendMsg(msg);
+      const replaceChatName = msg.replace("{chat_name}", currentChat.user_name);
+      handleSendMsg(replaceChatName);
       setMsg("");
     }else{
       textInput.current.focus();
@@ -248,6 +251,28 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
     handleAddToMsgHideShow()
   }
 
+  //funcion detectar si existe shortcode
+  const handleChangeShort = async (event) => {
+    setMsg(event.target.value)
+    const short = event.target.value
+    const letter = short.charAt(0);
+
+    if (letter==="/") {
+      const { data } = await axios.post(addReraByShortRoute, {short});
+      if (data.status === true) {
+        if (data.result.length >= 1) {
+          setShorts(data.result)
+          resrapidOptions.current.style.display = 'block';
+        }else{
+          setShorts(undefined)
+          resrapidOptions.current.style.display = 'none';
+        }
+      }
+    }else{
+      resrapidOptions.current.style.display = 'none';
+    }
+  }
+
   return (
     <>
     <div className="chat_contact">
@@ -307,10 +332,27 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
             {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick}/>}
           </div>
           <form className="input-container" onSubmit={(event) => sendChat(event)}>
+            <div className="card resrapidOptions" ref={resrapidOptions} style={{padding:'10px'}}>
+              <ul>
+                {shorts ? (
+                shorts.map((short) =>{
+                  return(
+                    <li onClick={() => {setMsg(short.rera_text), resrapidOptions.current.style.display = 'none';}} key={short._id}>
+                      <b>{short.rera_short}</b>
+                      <span>{short.rera_text}</span>
+                    </li>
+                  )
+                })
+                ) : (
+                  <p>No hay</p>
+                )
+                }
+              </ul>
+            </div>
             <input
               type="text"
               onClick={handleEmojiPickerHide}
-              onChange={(e) => setMsg(e.target.value)}
+              onChange={(e) => handleChangeShort(e)}
               value={msg}
               ref={textInput}
               placeholder="Escribe un mensaje"

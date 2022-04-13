@@ -47,9 +47,10 @@ export default function Contacts({ contacts, changeChat }) {
         datetimechat = d_time;
       }else{
       }
-      const time = d.getHours() + ":" + d.getMinutes() +' '+ d.getDate() + "/" + d.getMonth();
-      document.getElementById('msg'+user+'').innerHTML = lastmsgByUser
-      document.getElementById('dtc'+user+'').innerHTML = datetimechat
+      if (document.getElementById('msg'+user+'')) {
+        document.getElementById('msg'+user+'').innerHTML = lastmsgByUser
+        document.getElementById('dtc'+user+'').innerHTML = datetimechat
+      }
     }
   }
   return (

@@ -23,7 +23,7 @@ export default function Live() {
     email: "",
   })
   const scrollRef = useRef();
-  const socket = useRef();
+  const socket = useRef();  
   const addToMsg = useRef(null);
   const imageToMsg = useRef(null)
   const addToMsgButton = useRef(null);

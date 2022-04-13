@@ -3,6 +3,7 @@ const express = require("express");
 const mysql = require('mysql');
 const userRoutes = require("./routes/userRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const resrapRoutes = require("./routes/resrapidRoutes");
 const app = express();
 const socket = require("socket.io")
 const bodyParser = require('body-parser')
@@ -33,6 +34,7 @@ app.get('/', (req, res) => {
 
 app.use("/api/auth", userRoutes)
 app.use("/api/messages", messageRoutes)
+app.use("/api/resrapid", resrapRoutes)
 
 const server = app.listen(process.env.PORT,()=>{
   console.log(`Dev server on: ${process.env.PORT}`)

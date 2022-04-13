@@ -51,7 +51,7 @@ body{
   backdrop-filter: blur(10px);
   border-radius: 25px;
   display: grid;
-  grid-template-columns: 80px 350px calc(100% - 430px);
+  grid-template-columns: 80px 300px calc(100% - 380px);
 }
 .panel{
   background-color: #fff;
@@ -84,6 +84,9 @@ body{
   padding: 8px;
   transition: 0.2s ease-in-out;
 }
+.panel ul .panel-icon.active{
+  color: #007dff;
+}
 .panel ul .panel-icon:hover{
   color: #007dff;
   transition: 0.2s ease-in-out;
@@ -114,6 +117,11 @@ body{
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.card{
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 20px;
 }
 .btn{  
   font-family: 'Inter', sans-serif;
@@ -188,7 +196,7 @@ body{
   text-align: center;
   height: 45px;
   border-radius: 45px;
-  font-size: 14px;
+  font-size: 16px;
   color: #444;
 }
 .contacts .contact .username{
@@ -345,6 +353,48 @@ body{
   display: grid;
   grid-template-columns: calc(100% - 60px) 60px;
 }
+.chatContainerAdmin .chat-input form .resrapidOptions{
+  display: none;
+  position: absolute;
+  list-style: none;
+  max-height: 130px;
+  bottom: 56px;
+  width: 30%;
+  overflow-x: auto;
+  box-shadow: 0px 3px 5px 0px #00000010;
+}
+.chatContainerAdmin .chat-input form .resrapidOptions::-webkit-scrollbar {
+  width: 0.2rem;
+  background-color: #abbed3;
+  margin-right: 10px;
+  position: absolute;
+}
+.chatContainerAdmin .chat-input form .resrapidOptions::-webkit-scrollbar-thumb {
+  background-color: #76a5d8;
+  width: 0.1rem;
+  border-radius: 1rem;
+  margin-right: 10px;
+  position: absolute;
+}
+.chatContainerAdmin .chat-input form .resrapidOptions ul{
+  list-style: none;
+}
+.chatContainerAdmin .chat-input form .resrapidOptions ul li{
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  padding: 5px 2px;
+  border-style: solid;
+  border-color: #eee;
+  border-width: 0px 0px 1px 0px;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+}
+.chatContainerAdmin .chat-input form .resrapidOptions ul li:hover{
+  background-color: #eee;
+  transition: 0.3s ease-in-out;
+}
+
 .chatContainerAdmin .chat-input form input{
   outline: none;
   border: solid 2px #ddd;

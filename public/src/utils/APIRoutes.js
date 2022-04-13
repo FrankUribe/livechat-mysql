@@ -1,3 +1,4 @@
+// export const host = "http://aportealaingcivil.com/livechatapi";
 export const host = "http://localhost:5000";
 export const loginRoute = `${host}/api/auth/login`;
 export const newChatUserRoute = `${host}/api/auth/newchatuser`;
@@ -8,3 +9,8 @@ export const getMessagesRoute = `${host}/api/messages/getmsg`;
 export const getLastMessagesRoute = `${host}/api/messages/getlastmsg`;
 export const updateIsActiveRoute = `${host}/api/auth/updateactive`
 export const updateChatUserRoute = `${host}/api/auth/updatechatuser`
+export const getResrapidRoute = `${host}/api/resrapid/getresrap`
+export const addResrapidRoute = `${host}/api/resrapid/addresrap`
+export const addReraByShortRoute = `${host}/api/resrapid/getresrapbyshort`
+export const updateResrapRoute = `${host}/api/resrapid/updateresrap`
+export const deleteResrapRoute = `${host}/api/resrapid/deleteresrap`

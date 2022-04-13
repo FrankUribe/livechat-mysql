@@ -1,0 +1,154 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@800");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@600");
+.controls{
+  display: flex;
+  flex-direction: column;
+}
+.controls .control{
+  transition: 0.3s ease-in-out;
+  display: grid;
+  padding: 10px;
+  grid-template-columns: 45px calc(100% - 45px);
+  border-style: solid;
+  border-width: 0px 0px 1px 0px;
+  border-color: #eee;
+  cursor: pointer;
+}
+.controls .control .icon{
+  background-color: #e4f7ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 45px;
+  border-radius: 45px;
+  font-size: 20px;
+  color: #444;
+}
+.controls .control .description{
+  display: flex;
+  flex-direction: column;
+  padding-left: 10px;
+}
+.controls .control .description span{
+  font-size: 13px;
+}
+.controller{
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.controller .content{
+  display: flex;
+  gap: 20px;
+  height: 100%;
+}
+.controller .content .form{
+  width: 35%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.controller .content .form .card{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+.controller .content .form .inputPreview{
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.controller .content .form .inputPreview .resrapidOptions{
+  display: none;
+  position: absolute;
+  list-style: none;
+  max-height: 130px;
+  bottom: 40px;
+  width: 90%;
+  overflow-x: auto;
+  box-shadow: 0px 3px 5px 0px #00000010;
+}
+.controller .content .form .inputPreview .resrapidOptions::-webkit-scrollbar {
+  width: 0.2rem;
+  background-color: #abbed3;
+  margin-right: 10px;
+  position: absolute;
+}
+.controller .content .form .inputPreview .resrapidOptions::-webkit-scrollbar-thumb {
+  background-color: #76a5d8;
+  width: 0.1rem;
+  border-radius: 1rem;
+  margin-right: 10px;
+  position: absolute;
+}
+.controller .content .form .inputPreview .resrapidOptions ul{
+  list-style: none;
+}
+.controller .content .form .inputPreview .resrapidOptions ul li{
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  padding: 5px 2px;
+  border-style: solid;
+  border-color: #eee;
+  border-width: 0px 0px 1px 0px;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+}
+.controller .content .form .inputPreview .resrapidOptions ul li:hover{
+  background-color: #eee;
+  transition: 0.3s ease-in-out;
+}
+.controller .content .form button{
+  font-size: 14px;
+  width: 70px;
+}
+.controller .content .form input, .controller .content .form textarea{
+  outline: none;
+  border: solid #ccc 1px;
+  border-radius: 10px;
+  padding: 5px;
+  font-family: 'Inter', sans-serif;
+}
+.controller .content .list{
+  width: 65%;
+}
+.controller .content .list div div:nth-child(1){
+  display:flex;
+}
+.rdt_Table, .rdt_Table:has{
+  background-color: red !important;
+}
+.rdt_TableHeadRow .rdt_TableCol:nth-child(1), .rdt_TableBody .rdt_TableRow .rdt_TableCell:nth-child(1){
+  max-width: 20%;
+}
+.rdt_TableHeadRow .rdt_TableCol:nth-child(2), .rdt_TableBody .rdt_TableRow .rdt_TableCell:nth-child(2){
+  max-width: 65%;
+}
+.rdt_TableHeadRow .rdt_TableCol:nth-child(3), .rdt_TableBody .rdt_TableRow .rdt_TableCell:nth-child(3){
+  max-width: 15%;
+}
+.rdt_Pagination{
+  min-height: 40px !important;
+}
+.rdt_Pagination button{
+  padding: 0;
+  width: 20px;
+  height: 25px;
+}
+.modal-form{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.modal-form input, .modal-form textarea{
+  outline: none;
+  border: solid #ccc 1px;
+  border-radius: 10px;
+  padding: 5px;
+  font-family: 'Inter', sans-serif;
+}
