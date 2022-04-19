@@ -534,3 +534,22 @@ body{
     box-shadow: none;
   }
 }
+.ck-editor .ck-editor__top{
+  display: none;
+}
+.ck-editor .ck-editor__main .ck-content{
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  max-height: 40px;
+  border-radius: 15px !important;
+}
+.ck-editor .ck-editor__main .ck-content p{
+  margin: 0;
+}
+input[type=time] {
+  outline: none;
+  border: solid 1px #ddd;
+  padding: 2px 6px;
+  border-radius: 6px;
+}

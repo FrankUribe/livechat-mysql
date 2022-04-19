@@ -2,6 +2,7 @@ import '../assets/config.css'
 import { IoCodeSlashOutline,IoTimerOutline,IoPodiumOutline,IoPeopleOutline,IoPersonCircleOutline } from "react-icons/io5";
 import { useState } from "react";
 import RespRapid from '../components/RespRapid';
+import Schedule from '../components/Schedule';
 export default function Config() {
   const [control, setControl] = useState(undefined);
   const handleControl = (val) => {
@@ -18,17 +19,9 @@ export default function Config() {
   const returnControl = () => {
     switch(control) {
       case "resprapid": 
-        return (
-          <>
-          <RespRapid/>
-          </>
-        )
+        return <RespRapid/>
       case "horario":
-        return (
-          <>
-          <p>Horario</p>
-          </>
-        )
+        return <Schedule/>
       case "reporte":
         return (
           <>

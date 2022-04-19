@@ -104,9 +104,9 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
   };
 
   //funcion enviar mensaje asincrona
-  const handleSendMsg = async (msg) => {
+  const handleSendMsg = (msg) => {
     //backend axios envia mensaje
-    await axios.post(sendMessageRoute, {
+    axios.post(sendMessageRoute, {
       from: currentUser.id,
       to: currentChat._id,
       message: msg,
@@ -272,7 +272,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
       resrapidOptions.current.style.display = 'none';
     }
   }
-
+  
   return (
     <>
     <div className="chat_contact">

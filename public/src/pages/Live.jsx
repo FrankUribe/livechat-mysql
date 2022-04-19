@@ -2,11 +2,11 @@ import '../assets/live.css'
 import { useState, useEffect, useRef } from "react";
 import Picker from 'emoji-picker-react';
 import iconCcip from '../assets/icon.png'
-import { IoSend, IoHappy, IoAdd, IoCamera } from "react-icons/io5";
+import { IoSend, IoHappy, IoAdd, IoCamera, IoChatbubblesOutline } from "react-icons/io5";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { io } from "socket.io-client";
-import { getAdminUser, getMessagesRoute, newChatUserRoute, sendMessageRoute, updateIsActiveRoute, host } from "../utils/APIRoutes";
+import { getAdminUser, getMessagesRoute, newChatUserRoute, sendMessageRoute, updateIsActiveRoute, getScheduleByDay, host } from "../utils/APIRoutes";
 
 // window.global = window;
 export default function Live() {
@@ -22,6 +22,14 @@ export default function Live() {
     name: "",
     email: "",
   })
+  //Obtener el dia en capitalize y español; y la hora
+  const datenow = new Date();
+  const daynow = datenow.toLocaleDateString('es-ES', {weekday: 'long'})
+  const capitalDay = daynow.charAt(0).toUpperCase() + daynow.slice(1);
+  const timenow = datenow.toLocaleTimeString('es-ES', { timeZone: 'America/Lima' });
+  const [hora, setHora] = useState(false)
+  const [horario, setHorario] = useState({})
+
   const scrollRef = useRef();
   const socket = useRef();  
   const addToMsg = useRef(null);
@@ -31,8 +39,25 @@ export default function Live() {
   const [stateAddToMsg, setStateAddToMsg] = useState(false);
   const [stateImgToMsg, setStateImgToMsg] = useState(false);
 
+
+  //traer contactos
+  const consultSchedule = async () => {
+    const data = await axios.get(`${getScheduleByDay}/${capitalDay}`);
+    if (data) {
+      setHorario(data.data.result[0])
+      const open = data.data.result[0].sche_open;
+      const close = data.data.result[0].sche_close;
+
+      if (timenow > open && timenow < close) {
+        setHora(true)
+      }else{
+        setHora(false)
+      }
+    }
+  }
   //si existe un chat user en el local
   useEffect(() => {
+    consultSchedule();
     if (!localStorage.getItem('chatUser')) {
       return false
     } else {
@@ -316,6 +341,23 @@ export default function Live() {
           <div className="msgs">
           {
             currentUser ? (
+              hora === false ? (
+                <center className="notTime"
+                  style={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 5,
+                  }}
+                >
+                  <IoChatbubblesOutline style={{fontSize: 60, color:'#ed2f2f'}}/>
+                  <h2 style={{color:'#ed2f2f'}}>No disponible</h2>
+                  <span>Hemos recibido tu notificación, pero en este momento no podemos responder tus mensajes.</span>
+                  <span>Encuentranos entre las <b>{horario.sche_open}</b> y <b>{horario.sche_close}</b></span>
+                </center>
+              ) : (
               <div className="chat-messages">
                 {messages.map((message) => {
                   return (
@@ -350,9 +392,10 @@ export default function Live() {
                   );
                 })}
               </div>
+              )
             ) : (
               <div className="registerChat">
-                <form onSubmit={(event) => handleSubmit(event)}>                
+                <form onSubmit={(event) => handleSubmit(event)}>
                   <h4>Por favor, necesitamos estos datos</h4>
                   <input type="text" placeholder="Nombre" name="name" id="name" onChange={(e)=>handleChange(e)}/>
                   <input type="email" placeholder="Email" name="email" id="email" onChange={(e)=>handleChange(e)}/>
@@ -367,27 +410,31 @@ export default function Live() {
         <div className="chatFooter">
           {
             currentUser ? (
-              <>
-              <div className="emoji">
-                <button ref={addToMsgButton} onClick={handleAddToMsgHideShow}><IoAdd/></button>
-                <div className="addToMsg" ref={addToMsg}>
-                  <button onClick={handleImgHideShow}><IoCamera/></button>
-                  <button onClick={handleEmojiPickerHideShow}><IoHappy/></button>
+              hora === false ? (
+                <center style={{textAlign: 'center', width: '100%'}}>No disponible...</center>
+              ) : (
+                <>
+                <div className="emoji">
+                  <button ref={addToMsgButton} onClick={handleAddToMsgHideShow}><IoAdd/></button>
+                  <div className="addToMsg" ref={addToMsg}>
+                    <button onClick={handleImgHideShow}><IoCamera/></button>
+                    <button onClick={handleEmojiPickerHideShow}><IoHappy/></button>
+                  </div>
+                  {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick}/>}
                 </div>
-                {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick}/>}
-              </div>
-              <form className="input-container" onSubmit={(event) => sendChat(event)}>
-                <input
-                  type="text"
-                  placeholder={'Escribe un mensaje '+currentUser.name}
-                  onChange={(e) => setMsg(e.target.value)}
-                  value={msg}
-                  ref={textInput}
-                  onClick={handleEmojiPickerHide}
-                />
-                <button type="submit"><IoSend/></button>
-              </form>
-              </>
+                <form className="input-container" onSubmit={(event) => sendChat(event)}>
+                  <input
+                    type="text"
+                    placeholder={'Escribe un mensaje '+currentUser.name}
+                    onChange={(e) => setMsg(e.target.value)}
+                    value={msg}
+                    ref={textInput}
+                    onClick={handleEmojiPickerHide}
+                  />
+                  <button type="submit"><IoSend/></button>
+                </form>
+                </>
+              )
             ) : (
               <center style={{textAlign: 'center', width: '100%'}}>Completa los datos para iniciar el chat</center>
             )

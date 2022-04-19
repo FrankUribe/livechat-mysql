@@ -1,5 +1,5 @@
 // export const host = "http://aportealaingcivil.com/livechatapi";
-export const host = "http://localhost:5000";
+export const host = "http://chatapi.aportealaingcivil.com";
 export const loginRoute = `${host}/api/auth/login`;
 export const newChatUserRoute = `${host}/api/auth/newchatuser`;
 export const allUsersRoute = `${host}/api/auth/allusers`;
@@ -14,3 +14,6 @@ export const addResrapidRoute = `${host}/api/resrapid/addresrap`
 export const addReraByShortRoute = `${host}/api/resrapid/getresrapbyshort`
 export const updateResrapRoute = `${host}/api/resrapid/updateresrap`
 export const deleteResrapRoute = `${host}/api/resrapid/deleteresrap`
+export const getScheduleRoute = `${host}/api/schedules/getschedule`
+export const updateScheduleRoute = `${host}/api/schedules/updateschedule`
+export const getScheduleByDay = `${host}/api/schedules/getschedulebyday`
