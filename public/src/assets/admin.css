@@ -185,7 +185,17 @@ body{
 .contacts .contact.selected .username b{
   color: #fff;
 }
+.contacts .contact .username span{
+  max-height: 18px;
+}
 .contacts .contact.selected .username span{
+  color: #eee;
+}
+.contacts .contact .username span div{
+  background-color: transparent !important;
+}
+.contacts .contact.selected .username span div{
+  background-color: transparent !important;
   color: #eee;
 }
 .contacts .contact .profilepic{
@@ -309,7 +319,6 @@ body{
   border: none;
 }
 .chatContainerAdmin .chat-input{
-  height: 40px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -348,12 +357,12 @@ body{
 .chatContainerAdmin .chat-input .emoji button{
   cursor: pointer;
 }
-.chatContainerAdmin .chat-input form{
+.chatContainerAdmin .chat-input .input-container{
   width: 100%;
   display: grid;
   grid-template-columns: calc(100% - 60px) 60px;
 }
-.chatContainerAdmin .chat-input form .resrapidOptions{
+.chatContainerAdmin .chat-input .input-container .resrapidOptions{
   display: none;
   position: absolute;
   list-style: none;
@@ -363,23 +372,23 @@ body{
   overflow-x: auto;
   box-shadow: 0px 3px 5px 0px #00000010;
 }
-.chatContainerAdmin .chat-input form .resrapidOptions::-webkit-scrollbar {
+.chatContainerAdmin .chat-input .input-container .resrapidOptions::-webkit-scrollbar {
   width: 0.2rem;
   background-color: #abbed3;
   margin-right: 10px;
   position: absolute;
 }
-.chatContainerAdmin .chat-input form .resrapidOptions::-webkit-scrollbar-thumb {
+.chatContainerAdmin .chat-input .input-container .resrapidOptions::-webkit-scrollbar-thumb {
   background-color: #76a5d8;
   width: 0.1rem;
   border-radius: 1rem;
   margin-right: 10px;
   position: absolute;
 }
-.chatContainerAdmin .chat-input form .resrapidOptions ul{
+.chatContainerAdmin .chat-input .input-container .resrapidOptions ul{
   list-style: none;
 }
-.chatContainerAdmin .chat-input form .resrapidOptions ul li{
+.chatContainerAdmin .chat-input .input-container .resrapidOptions ul li{
   display: flex;
   flex-direction: column;
   font-size: 11px;
@@ -390,12 +399,12 @@ body{
   cursor: pointer;
   transition: 0.3s ease-in-out;
 }
-.chatContainerAdmin .chat-input form .resrapidOptions ul li:hover{
+.chatContainerAdmin .chat-input .input-container .resrapidOptions ul li:hover{
   background-color: #eee;
   transition: 0.3s ease-in-out;
 }
 
-.chatContainerAdmin .chat-input form input{
+.chatContainerAdmin .chat-input .input-container input{
   outline: none;
   border: solid 2px #ddd;
   background-color: #ffffffdd;
@@ -404,7 +413,7 @@ body{
   border-radius: 10px;
   color: #666;
 }
-.chatContainerAdmin .chat-input form button{
+.chatContainerAdmin .chat-input .input-container button{
   border: none;
   background-color: transparent;
   color: #007dff;
@@ -437,6 +446,10 @@ body{
 }
 .chat-messages.admin .chat-admin .message .content {
   box-shadow: 2px 5px 5px 0px #00000008;
+}
+.chat-messages.admin .chat-admin .message .content img{
+  width: auto;
+  max-width: 100%;
 }
 .chat-messages.admin .chat-admin .message.recieved .content {
   background-color: #ffffff;
@@ -538,18 +551,55 @@ body{
   display: none;
 }
 .ck-editor .ck-editor__main .ck-content{
-  display: flex;
-  align-items: center;
-  min-height: 40px;
-  max-height: 40px;
+  min-height: 20px;
+  max-height: 80px;
   border-radius: 15px !important;
+  padding: 10px;
 }
 .ck-editor .ck-editor__main .ck-content p{
   margin: 0;
+}
+.ck-editor .ck-editor__main .ck-content figure{
+  width: 100%;
+}
+.ck-editor .ck-editor__main .ck-content figure img{
+  width: 50% !important;
+}
+.ck-widget__type-around, .ck-editor .ck-widget__type-around{
+  display: none !important;
 }
 input[type=time] {
   outline: none;
   border: solid 1px #ddd;
   padding: 2px 6px;
   border-radius: 6px;
+}
+.cteditable{  
+  min-height: 20px;
+  max-height: 80px;
+  border: solid 1px #ddd;
+  border-radius: 15px !important;
+  padding: 10px;
+  outline: none;
+  overflow: auto;
+  background-color: #ffffff;
+}
+.cteditable div{
+  background-color: transparent !important;
+}
+.chat-messages.admin .chat-admin .message .content div{
+  background-color: transparent !important;
+}
+.cteditable p, .cteditable span, .cteditable b, .cteditable small, .cteditable h1, .cteditable h2, .cteditable h3, .cteditable h4, .cteditable h5, .cteditable h6, 
+.cteditable title{
+  background-color: transparent !important;
+  all: initial !important;
+  all: unset !important;
+  all: none !important;
+  font-family: sans-serif !important;
+  color: #000 !important;
+}
+.cteditable img{
+  width: auto;
+  max-width: 100%;
 }

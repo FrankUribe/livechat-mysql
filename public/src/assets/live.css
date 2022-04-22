@@ -230,15 +230,22 @@
 .chat-messages .message.sended {
   justify-content: flex-end;
 }
-.chat-messages .message.sended .content {
+.chat-messages .message.sended .content{
   background-color: #007dff;
+  color: #eee;
+}
+.chat-messages .message.sended .content div{
+  color: #eee;
+}
+.chat-messages .message.sended .content a{
   color: #fff;
-  text-align: right;
+  font-weight: 600;
 }
 .chat-messages .message.sended .content small{
   font-size: 10px;
   color: #eee;
   margin-left: 3px;
+  float: right;
 }
 .chat-messages .message.recieved {
   justify-content: flex-start;
@@ -246,10 +253,9 @@
 .chat-messages .message.recieved .content {
   background-color: #eee;
   color: #444;
-  text-align: left;
 }
 .chat-messages .message.recieved .content small{
   font-size: 10px;
   color: #888;
-  margin-left: 3px;
+  float: left;
 }

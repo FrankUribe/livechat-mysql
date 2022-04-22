@@ -254,14 +254,14 @@ export default function Live() {
     await axios.post(sendMessageRoute, {
       from: adminUser,
       to: user.id,
-      message: "Hola "+user.name+" un asistente se unirá al chat en breve 😃",
+      message: "Hola "+user.name+" un asistente se unirá al chat en breve...",
     });
     const msgs = [...messages]
     const d = new Date();
     const time = d.getHours() + ":" + d.getMinutes();
     msgs.push({
       fromSelf: false,
-      message: "Hola "+user.name+" un asistente se unirá al chat en breve 😃",
+      message: "Hola "+user.name+" un asistente se unirá al chat en breve...",
       datetime: time,
     })
     setMessages(msgs)
@@ -327,6 +327,7 @@ export default function Live() {
     handleImgHideShow()
     handleAddToMsgHideShow()
   }
+
   return (
     <>
     <div className="chatContainer">
@@ -381,9 +382,8 @@ export default function Live() {
                             </>
                             :
                             <>
-                              <p>{message.message}
+                              <p dangerouslySetInnerHTML={{__html: message.message}}></p>
                               <small>{message.datetime}</small>
-                              </p>
                             </>
                           }
                         </div>

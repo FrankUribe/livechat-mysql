@@ -13,11 +13,12 @@ export default function RespRapid() {
   const [resRapToEdit, setResRapToEdit] = useState(undefined)
   const [modal, setModal] = useState(false)
   const resrapidOptions = useRef();
+  const editableMsg = useRef();
 
-  const handleChangeShort = async (event) => {
-    setMsg(event.target.value)
-    const short = event.target.value
-    if (short!=="") {
+  const handleChangeShort = async (event) => {    
+    const short = editableMsg.current.innerHTML
+    const letter = short.charAt(0);
+    if (letter==="/") {
       const { data } = await axios.post(addReraByShortRoute, {short});
       if (data.status === true) {
         if (data.result.length >= 1) {
@@ -33,10 +34,8 @@ export default function RespRapid() {
     }
   }
   
-  const [values, setValues] = useState({ short: "", text: "", })
-  const handleChange = (event) => {
-    setValues({ ...values, [event.target.name]: event.target.value })
-  }
+  const [inputshort, setInputshort] = useState("")
+  const [inputcontent, setInputcontent] = useState(undefined);
 
   const getResRapid = async () => {
     const lastm = await axios.post(getResrapidRoute);
@@ -57,8 +56,7 @@ export default function RespRapid() {
   }
   
   const handleValidation = () => {
-    const {short,text} = values;
-    if (short==='' || text==='') {
+    if (inputshort==='' || inputcontent===undefined) {
       toast.error("Debe completar todos los datos", toastOptions)
       return false;
     }else{
@@ -68,10 +66,9 @@ export default function RespRapid() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (handleValidation()){
-      const { short, text } = values;
       const { data } = await axios.post(addResrapidRoute, {
-        short,
-        text,
+        short: inputshort,
+        text: inputcontent,
       });
       if (data.status === false) {
         toast.error(data.msg, toastOptions)
@@ -79,30 +76,32 @@ export default function RespRapid() {
       if (data.status === true) {
         toast.success(data.msg, toastOptions)
         getResRapid()
-        setValues({ short: "", text: "", })
+        setInputshort("")
+        setInputcontent(undefined)
+        editableMsg.current.innerHTML = ""
       }
     }
   }
 
-  const handleChangeResRapEit = (event) => {
-    setResRapToEdit({ ...resRapToEdit, [event.target.name]: event.target.value })
-  }
+  // const handleChangeResRapEit = (event) => {
+  //   setResRapToEdit({ ...resRapToEdit, [event.target.name]: event.target.value })
+  // }
 
-  const updateResRap = async () => {
-    setModal(false)
-    const { data } = await axios.post(updateResrapRoute, {
-      short: resRapToEdit.rera_short,
-      text: resRapToEdit.rera_text,
-      id: resRapToEdit._id
-    });
-    if (data.status === false) {
-      toast.error('Algo ha salido mal, no se ha podido editar', toastOptions)
-    }
-    if (data.status === true) {
-      getResRapid()
-      setResRapToEdit(undefined)
-    }
-  }
+  // const updateResRap = async () => {
+  //   setModal(false)
+  //   const { data } = await axios.post(updateResrapRoute, {
+  //     short: resRapToEdit.rera_short,
+  //     text: resRapToEdit.rera_text,
+  //     id: resRapToEdit._id
+  //   });
+  //   if (data.status === false) {
+  //     toast.error('Algo ha salido mal, no se ha podido editar', toastOptions)
+  //   }
+  //   if (data.status === true) {
+  //     getResRapid()
+  //     setResRapToEdit(undefined)
+  //   }
+  // }
 
   const deleteResRap = async (id) => {
     const { data } = await axios.post(deleteResrapRoute, {id});
@@ -132,8 +131,12 @@ export default function RespRapid() {
         <div className="form">
           <div className="card">
             <h4>Nuevo</h4>
-            <input type="text" placeholder="/hola" name="short" onChange={(e)=>handleChange(e)} value={values.short}/>
-            <textarea rows="10" name="text" onChange={(e)=>handleChange(e)} value={values.text}></textarea>
+            <input type="text" placeholder="/hola" name="short" onChange={(e) => setInputshort(e.target.value)} value={inputshort}/>
+            {/* <textarea rows="10" name="text" onChange={(e)=>handleChange(e)} value={values.text}></textarea> */}
+            <div className="cteditable" ref={editableMsg} 
+                contentEditable="true"
+                style={{maxHeight:'300px'}}
+                onInput={(e) => setInputcontent(editableMsg.current.innerHTML)}></div>
             <button className="btn btn-primary" onClick={(event) => handleSubmit(event)}>Crear</button>
           </div>
           <div className="inputPreview">
@@ -142,9 +145,9 @@ export default function RespRapid() {
                 {shorts ? (
                 shorts.map((short) =>{
                   return(
-                    <li onClick={() => {setMsg(short.rera_text), resrapidOptions.current.style.display = 'none';}} key={short._id}>
+                    <li onClick={() => {editableMsg.current.innerHTML = short.rera_text, resrapidOptions.current.style.display = 'none';}} key={short._id}>
                       <b>{short.rera_short}</b>
-                      <span>{short.rera_text}</span>
+                      <span style={{maxHeight:50, overflow:'hidden'}}>{short.rera_text}</span>
                     </li>
                   )
                 })
@@ -155,7 +158,10 @@ export default function RespRapid() {
               </ul>
             </div>
             <small>Escribe un mensaje rápido</small>
-            <input type="text" name="msg" onChange={(e)=>handleChangeShort(e)} value={msg}/>
+            {/* <input type="text" name="msg" onChange={(e)=>handleChangeShort(e)} value={msg}/> */}
+            <div className="cteditable" ref={editableMsg} 
+                contentEditable="true"
+                onInput={(e) => handleChangeShort(e)}></div>
           </div>
         </div>
         <div className="list">
@@ -177,7 +183,7 @@ export default function RespRapid() {
                 name:"Opciones",
                 cell: row => (
                   <>
-                  <button onClick={() => {setResRapToEdit(row), setModal(true)}} style={{padding:'4px 6px 1px', color:'#007dff', background:'none', borderStyle:'none', cursor:'pointer'}}><IoPencilSharp/></button>
+                  {/* <button onClick={() => {setResRapToEdit(row), setModal(true)}} style={{padding:'4px 6px 1px', color:'#007dff', background:'none', borderStyle:'none', cursor:'pointer'}}><IoPencilSharp/></button> */}
                   <button onClick={() => deleteResRap(row._id)} style={{padding:'4px 6px 1px', color:'#c51f1f', background:'none', borderStyle:'none', cursor:'pointer'}}><IoTrashBin/></button>
                   </>
                 ),

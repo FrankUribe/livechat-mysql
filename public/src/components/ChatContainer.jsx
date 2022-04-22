@@ -13,6 +13,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
+  const editableMsg = useRef();
   const addToMsg = useRef(null);
   const imageToMsg = useRef(null)
   const addToMsgButton = useRef(null);
@@ -89,15 +90,18 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
     let message = msg;
     message += emoji.emoji;
     setMsg(message)
+    editableMsg.current.innerHTML += emoji.emoji
+    console.log(emoji)
   }
 
   //presiona boton enviar -> funcion enviar mensaje
-  const sendChat = (event) => {
-    event.preventDefault();
+  const sendChat = () => {
+    // event.preventDefault();    
     if (msg.length > 0) {
       const replaceChatName = msg.replace("{chat_name}", currentChat.user_name);
       handleSendMsg(replaceChatName);
       setMsg("");
+      editableMsg.current.innerHTML = ""
     }else{
       textInput.current.focus();
     }
@@ -133,7 +137,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
   };
 
   //funcion traer el ultimo mensaje del chat
-  const getlastmsgByUser = async () => {
+  const getlastmsgByUser = async (user) => {
     if (currentChat) {
       const lastm = await axios.post(getLastMessagesRoute, {
         from: currentChat._id,
@@ -158,7 +162,11 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
         datetimechat = d_time;
       }
 
-      document.getElementById('msg'+currentChat._id+'').innerHTML = lastmsgByUser
+      if (lastmsgByUser.length > 200) {
+        document.getElementById('msg'+user+'').innerHTML = 'Mensaje HTML'
+      }else{
+        document.getElementById('msg'+user+'').innerHTML = lastmsgByUser
+      }
       document.getElementById('dtc'+currentChat._id+'').innerHTML = datetimechat
     }
   }
@@ -253,8 +261,8 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
 
   //funcion detectar si existe shortcode
   const handleChangeShort = async (event) => {
-    setMsg(event.target.value)
-    const short = event.target.value
+    
+    const short = editableMsg.current.innerHTML
     const letter = short.charAt(0);
 
     if (letter==="/") {
@@ -289,6 +297,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
         <div className="chat-messages admin">
           <div className="chat-admin">
           {messages.map((message) => {
+            const mensaje = message.message;
             return (
               <div ref={scrollRef} key={uuidv4()}>
                 <div
@@ -310,9 +319,8 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
                       </>
                       :
                       <>
-                        <p>{message.message}
+                        <div dangerouslySetInnerHTML={{__html: message.message}}></div>
                         <small>{message.datetime}</small>
-                        </p>
                       </>
                     }
                   </div>
@@ -331,15 +339,15 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
             </div>
             {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick}/>}
           </div>
-          <form className="input-container" onSubmit={(event) => sendChat(event)}>
+          <div className="input-container">
             <div className="card resrapidOptions" ref={resrapidOptions} style={{padding:'10px'}}>
               <ul>
                 {shorts ? (
                 shorts.map((short) =>{
                   return(
-                    <li onClick={() => {setMsg(short.rera_text), resrapidOptions.current.style.display = 'none';}} key={short._id}>
+                    <li onClick={() => {editableMsg.current.innerHTML = short.rera_text, setMsg(short.rera_text), resrapidOptions.current.style.display = 'none';}} key={short._id}>
                       <b>{short.rera_short}</b>
-                      <span>{short.rera_text}</span>
+                      <span style={{maxHeight:50, overflow:'hidden'}}>{short.rera_text}</span>
                     </li>
                   )
                 })
@@ -349,16 +357,11 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
                 }
               </ul>
             </div>
-            <input
-              type="text"
-              onClick={handleEmojiPickerHide}
-              onChange={(e) => handleChangeShort(e)}
-              value={msg}
-              ref={textInput}
-              placeholder="Escribe un mensaje"
-            />
-            <button type="submit"><IoSend/></button>
-          </form>
+            <div className="cteditable" ref={editableMsg} 
+                contentEditable="true" style={{maxHeight:120}}
+                onInput={(e) => {setMsg(editableMsg.current.innerHTML), handleChangeShort(e)}}></div>
+            <button onClick={sendChat}><IoSend/></button>
+          </div>
         </div>
       </div>
       <div className="contactDetails">

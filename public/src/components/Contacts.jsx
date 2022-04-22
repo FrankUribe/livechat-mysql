@@ -48,7 +48,11 @@ export default function Contacts({ contacts, changeChat }) {
       }else{
       }
       if (document.getElementById('msg'+user+'')) {
-        document.getElementById('msg'+user+'').innerHTML = lastmsgByUser
+        if (lastmsgByUser.length > 200) {
+          document.getElementById('msg'+user+'').innerHTML = 'Mensaje HTML'
+        }else{
+          document.getElementById('msg'+user+'').innerHTML = lastmsgByUser
+        }
         document.getElementById('dtc'+user+'').innerHTML = datetimechat
       }
     }
