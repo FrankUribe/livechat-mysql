@@ -58,6 +58,24 @@ module.exports.getAdminUser = async (req, res, next) => {
   }
 };
 
+module.exports.getUser = async (req, res, next) => {
+  try {
+    connection.query("SELECT _id, user_name FROM tb_users WHERE _id = '"+req.body.id+"'", (error, result) => {
+      if (error) {
+        return res.json({ msg: "Error en la consulta", status: false });
+      }else{
+        if (result.length <= 0) {
+          return res.json({ msg: "Sin usuarios", status: false });
+        }else{
+          return res.json({ status: true, result})
+        };
+      }
+    });
+  } catch (error) {
+    next(error)
+  }
+};
+
 module.exports.newChatUser = async (req, res, next) => {
   try {
     const { id, email, name } = req.body;

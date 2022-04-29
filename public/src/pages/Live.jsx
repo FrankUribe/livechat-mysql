@@ -1,12 +1,13 @@
 import '../assets/live.css'
+import { Link } from 'react-router-dom'
 import { useState, useEffect, useRef } from "react";
 import Picker from 'emoji-picker-react';
 import iconCcip from '../assets/icon.png'
-import { IoSend, IoHappy, IoAdd, IoCamera, IoChatbubblesOutline } from "react-icons/io5";
+import { IoSend, IoHappy, IoAdd, IoCamera, IoChatbubblesOutline, IoDocument } from "react-icons/io5";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { io } from "socket.io-client";
-import { getAdminUser, getMessagesRoute, newChatUserRoute, sendMessageRoute, updateIsActiveRoute, getScheduleByDay, host } from "../utils/APIRoutes";
+import { getAdminUser, getMessagesRoute, newChatUserRoute, sendMessageRoute, updateIsActiveRoute, getScheduleByDay, getUserRoute, host } from "../utils/APIRoutes";
 
 // window.global = window;
 export default function Live() {
@@ -34,13 +35,46 @@ export default function Live() {
   const socket = useRef();  
   const addToMsg = useRef(null);
   const imageToMsg = useRef(null)
+  const fileToMsg = useRef(null)
   const addToMsgButton = useRef(null);
+  const fileToSend = useRef(null)
   const [baseImage, setBaseImage] = useState("");
+  const [baseFile, setBaseFile] = useState("");
   const [stateAddToMsg, setStateAddToMsg] = useState(false);
   const [stateImgToMsg, setStateImgToMsg] = useState(false);
+  const [stateFileToMsg, setStateFileToMsg] = useState(false);
+  
+  var pkuser = ''
+  var pkadmin = ''
+  // traer el pk del admin para chatear
+  const traerAdminUser = async () => {
+    const { data } = await axios.post(getAdminUser);
+    if (data.status === true) {
+      setAdminUser(data.id)
+      pkadmin = data.id
+    }
+  }  
 
+  //traer el pk del usario, sino exite en la db, borramos el local
+  const traerChatUser = async () => {
+    if (localStorage.getItem('chatUser')) {
+      const pk = JSON.parse(localStorage.getItem('chatUser')).id
+      const { data } = await axios.post(getUserRoute, { id: pk })
+      if (data.status === true) {
+        setCurrentUser(JSON.parse(localStorage.getItem('chatUser')));
+        axios.post(updateIsActiveRoute, {
+          id: pk,
+          status: 1,
+        })
+        socket.current = io(host);
+        socket.current.emit("setActiveUser")
+        pkuser = pk
+      } else {
+        localStorage.removeItem("chatUser");
+      }
+    }
+  }
 
-  //traer contactos
   const consultSchedule = async () => {
     const data = await axios.get(`${getScheduleByDay}/${capitalDay}`);
     if (data) {
@@ -48,31 +82,51 @@ export default function Live() {
       const open = data.data.result[0].sche_open;
       const close = data.data.result[0].sche_close;
 
-      if (timenow > open && timenow < close) {
+      if (open < timenow && close > timenow) {
         setHora(true)
       }else{
         setHora(false)
       }
     }
   }
-  //si existe un chat user en el local
-  useEffect(() => {
-    consultSchedule();
-    if (!localStorage.getItem('chatUser')) {
-      return false
-    } else {
-      setCurrentUser(JSON.parse(localStorage.getItem('chatUser')));
-      const pk = JSON.parse(localStorage.getItem('chatUser')).id
-      axios.post(updateIsActiveRoute, {
-        id: pk,
-        status: 1,
-      })
-      socket.current = io(host);
-      socket.current.emit("setActiveUser")
-      return true
-    }
-  }, []);
 
+
+  useEffect(async () => {
+    await traerChatUser()
+    await traerAdminUser()
+    await consultSchedule()
+  }, [])
+  
+  useEffect( async () => {
+    const { data } = await axios.post(getAdminUser);
+    const pkadmin = data.id
+    // si existe un chat user en el local
+    const startgetting = async () => {
+      if (localStorage.getItem('chatUser')) {
+        const pk = JSON.parse(localStorage.getItem('chatUser')).id
+        const { data } = await axios.post(getUserRoute, { id: pk })
+        if (data.status === true) {
+          setCurrentUser(JSON.parse(localStorage.getItem('chatUser')));
+          axios.post(updateIsActiveRoute, {
+            id: pk,
+            status: 1,
+          })
+          socket.current = io(host);
+          socket.current.emit("setActiveUser")          
+          pkuser = pk
+          const response = await axios.post(getMessagesRoute, {
+            from: pk,
+            to: pkadmin,
+          });
+          setMessages(response.data);
+        } else {
+          localStorage.removeItem("chatUser");
+        }
+      }
+    };
+    startgetting()
+  }, [])
+  
   const handleisActive = async () => {
     await axios.post(updateIsActiveRoute, {
       id: currentUser.id,
@@ -101,32 +155,11 @@ export default function Live() {
     setShowEmojiPicker(false)
   }
   const handleEmojiClick = (event, emoji) => {
+    const img = '<span><img class="emoji-img" style="width: auto; max-width:16px; margin-bottom:-3px; position:relative" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/'+emoji.unified+'.png"/></span>'
     let message = msg;
-    message += emoji.emoji;
+    message += img;
     setMsg(message)
-  }
-
-  useEffect(() => {
-    const getAdmin = async () => {
-      const { data } = await axios.post(getAdminUser);
-      if (data.status === false) {
-      }
-      if (data.status === true) {
-        setAdminUser(data.id)
-      }
-    }
-    getAdmin()
-  },[])
-  
-  useEffect(async () => {
-    if (currentUser) {
-      const response = await axios.post(getMessagesRoute, {
-        from: currentUser.id,
-        to: adminUser,
-      });
-      setMessages(response.data);
-    }
-  }, [adminUser])
+  }  
   
   const handleAddToMsgHideShow = () => {
     if (stateAddToMsg===true) {
@@ -190,6 +223,7 @@ export default function Live() {
           function(){
             sendIniciarMsg(data.data)
           }, 2000);
+        pkuser = pkNewChatUser
       }
     }
   }
@@ -211,8 +245,8 @@ export default function Live() {
       message: msg,
     });
     socket.current.emit("send-msg", {
-      to: adminUser,
       from: currentUser.id,
+      to: adminUser,
       message: msg,
     })
     const msgs = [...messages]
@@ -223,7 +257,12 @@ export default function Live() {
       message: msg,
       datetime: time,
     })
-    setMessages(msgs)
+    setMessages(msgs)    
+    const response = await axios.post(getMessagesRoute, {
+      from: currentUser.id,
+      to: adminUser,
+    });
+    setMessages(response.data);
   };
 
   const sendIniciarMsg = async (user) => {
@@ -275,9 +314,14 @@ export default function Live() {
 
       const d = new Date();
       const time = d.getHours() + ":" + d.getMinutes();
-      socket.current.on("msg-recieve", (msg) => {
-        setArrivalMessage({fromSelf:false, message: msg, datetime: time})
-      })
+      if (socket.current) {
+        socket.current.on("msg-recieve", (msg) => {
+          setArrivalMessage({fromSelf:false, message: msg, datetime: time})
+        console.log('recived')
+        })
+      }else{
+        console.log('no hay socket.current')
+      }
     }
   }, [currentUser]);
 
@@ -318,6 +362,7 @@ export default function Live() {
       setBaseImage("");
     }else{
       imageToMsg.current.style.display = 'flex'
+      handleAddToMsgHideShow()
     }
     setStateImgToMsg(!stateImgToMsg)
   }
@@ -328,6 +373,59 @@ export default function Live() {
     handleAddToMsgHideShow()
   }
 
+  
+  const handleFileHideShow = () => {
+    if (stateFileToMsg===true) {
+      fileToMsg.current.style.display = 'none'
+      setBaseFile("");
+    }else{
+      fileToMsg.current.style.display = 'flex'
+      handleAddToMsgHideShow()
+    }
+    setStateFileToMsg(!stateFileToMsg)
+  }
+  
+  const handleSendFileMsg = async () => {
+    const file = fileToSend.current.files[0];
+    const username = JSON.parse(localStorage.getItem('chatUser')).name
+    if (file) {
+      const fileName = fileToSend.current.files[0].name;
+      const fileNameToPath = username+' - '+fileToSend.current.files[0].name;
+      const tomsg = '<a href="https://chat.ccipperu.com/upload/chatfiles/'+fileNameToPath+'" target="blank">'+fileName+'</a>'
+      
+      const uploadFile = async () => {
+        let formData = new FormData();
+        formData.append("file", fileToSend.current.files[0]);
+        formData.append("filename", fileNameToPath)
+        const local = 'http://localhost/upload/upload.php'
+        const deply = 'https://chat.ccipperu.com/upload/upload.php'
+        await fetch(deply, {
+          method: "POST", 
+          body: formData
+        }); 
+      }
+
+      uploadFile()
+      handleSendMsg(tomsg)
+      handleFileHideShow()
+      handleAddToMsgHideShow()
+      fileToSend.current.value = null
+    }
+  }
+
+  useEffect(() => {
+    setInterval(async () => {
+      if (pkuser !== '' & pkadmin !== '') {
+        const response = await axios.post(getMessagesRoute, {
+          from: pkuser,
+          to: pkadmin,
+        });
+        setMessages(response.data);
+        console.log('getting msgs evr 5s')
+      }
+    }, 5000)
+  }, [])
+  
   return (
     <>
     <div className="chatContainer">
@@ -417,10 +515,11 @@ export default function Live() {
                 <div className="emoji">
                   <button ref={addToMsgButton} onClick={handleAddToMsgHideShow}><IoAdd/></button>
                   <div className="addToMsg" ref={addToMsg}>
+                    <button onClick={handleFileHideShow}><IoDocument/></button>
                     <button onClick={handleImgHideShow}><IoCamera/></button>
-                    <button onClick={handleEmojiPickerHideShow}><IoHappy/></button>
+                    {/* <button onClick={handleEmojiPickerHideShow}><IoHappy/></button> */}
                   </div>
-                  {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick}/>}
+                  {/* {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick}/>} */}
                 </div>
                 <form className="input-container" onSubmit={(event) => sendChat(event)}>
                   <input
@@ -442,27 +541,44 @@ export default function Live() {
         </div>
       </div>
       
-    <div className="addImageChatUser" ref={imageToMsg}>
-      <input
-        type="file"
-        accept="image/jpeg"
-        onChange={(e) => {
-          uploadImage(e);
-        }}
-      />
-      {
-        baseImage !== "" ?
-        <>
-        <img src={baseImage} />
-        <div className="btns">
-          <button className="btn" onClick={handleImgHideShow}>x</button>
-          <button className="btn btn-primary" onClick={handleSendImgMsg}>Enviar</button>
+      <div className="addImageChatUser" ref={imageToMsg}>
+        <span>Envio de imagen</span>
+        <input
+          type="file"
+          accept="image/jpeg"
+          onChange={(e) => {
+            uploadImage(e);
+          }}
+        />
+        {
+          baseImage !== "" ?
+          <>
+          <img src={baseImage} />
+          <div className="btns">
+            <button className="btn" onClick={handleImgHideShow}>x</button>
+            <button className="btn btn-primary" onClick={handleSendImgMsg}>Enviar</button>
+          </div>
+          </>
+          :
+          <button className="btn btn-primary" onClick={handleImgHideShow}>x</button>
+        }
+      </div>
+      <div className="addFileChatUser" ref={fileToMsg}>
+        <span>Envio de archivo</span>
+        <input type="file" accept="application/pdf" ref={fileToSend}/>
+        {
+          baseFile !== "" ?
+          <>
+          {/* <Link to={baseFile}>File</Link> */}
+          </>
+          :
+          ''
+        }
+        <div className="btns" id='gbtns'>
+          <button className="btn" onClick={handleFileHideShow}>x</button>
+          <button className="btn btn-primary" onClick={handleSendFileMsg}>Enviar</button>
         </div>
-        </>
-        :
-        <button className="btn btn-primary" onClick={handleImgHideShow}>x</button>
-      }
-    </div>
+      </div>
     </div>
     </>
   )

@@ -78,7 +78,7 @@ export default function RespRapid() {
         getResRapid()
         setInputshort("")
         setInputcontent(undefined)
-        editableMsg.current.innerHTML = ""
+        document.getElementById('cteditablecreate').innerHTML = ""
       }
     }
   }
@@ -133,10 +133,10 @@ export default function RespRapid() {
             <h4>Nuevo</h4>
             <input type="text" placeholder="/hola" name="short" onChange={(e) => setInputshort(e.target.value)} value={inputshort}/>
             {/* <textarea rows="10" name="text" onChange={(e)=>handleChange(e)} value={values.text}></textarea> */}
-            <div className="cteditable" ref={editableMsg} 
+            <div className="cteditable" id="cteditablecreate"
                 contentEditable="true"
                 style={{maxHeight:'300px'}}
-                onInput={(e) => setInputcontent(editableMsg.current.innerHTML)}></div>
+                onInput={(e) => setInputcontent(e.target.innerHTML)}></div>
             <button className="btn btn-primary" onClick={(event) => handleSubmit(event)}>Crear</button>
           </div>
           <div className="inputPreview">
@@ -158,7 +158,6 @@ export default function RespRapid() {
               </ul>
             </div>
             <small>Escribe un mensaje rápido</small>
-            {/* <input type="text" name="msg" onChange={(e)=>handleChangeShort(e)} value={msg}/> */}
             <div className="cteditable" ref={editableMsg} 
                 contentEditable="true"
                 onInput={(e) => handleChangeShort(e)}></div>

@@ -191,6 +191,11 @@ body{
 .contacts .contact.selected .username span{
   color: #eee;
 }
+.contacts .contact.selected .username span a{
+  color: #eee;
+  pointer-events: none;
+  cursor: default;
+}
 .contacts .contact .username span div{
   background-color: transparent !important;
 }
@@ -226,7 +231,13 @@ body{
   color: #666;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;  
+  text-overflow: ellipsis;
+}
+.contacts .contact .username span a{
+  text-decoration: none;
+  color: #666;
+  pointer-events: none;
+  cursor: default;
 }
 .contacts .contact .chattime{
   font-size: 10px;
@@ -328,8 +339,8 @@ body{
   position: absolute;
   display: none;
   flex-direction: column;
-  height: 70px;
-  top: -90px;
+  height: 102px;
+  top: -120px;
   background-color: #007dff;
   gap: 5px;
   padding: 5px;
@@ -457,7 +468,8 @@ body{
 .addImage{
   position: absolute;
   background-color: #ffffffee;
-  min-height: 100%;
+  min-height: 20%;
+  padding: 20px;
   transform: scale(0.9);
   border-radius: 20px;
   display: none;
@@ -466,11 +478,29 @@ body{
   align-items: center;
   box-shadow: 0px 5px 15px 0px #00000015;
   gap: 10px;
-  width: 50%;
+  width: 20%;
+  max-width: 50%;
 }
 .addImage img{
   width: 80%;
   height: auto;
+}
+.addFile{
+  position: absolute;
+  background-color: #ffffffee;
+  min-height: 20%;
+  padding: 20px;
+  transform: scale(0.9);
+  border-radius: 20px;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0px 5px 15px 0px #00000015;
+  gap: 10px;
+  max-width: 350px;
+  width: 50%;
+  z-index: 9;
 }
 @media only screen and (max-width:1000px){
   .adminBox{

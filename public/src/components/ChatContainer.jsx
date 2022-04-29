@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { IoSend, IoHappy, IoEllipsisVertical, IoPencil, IoAdd, IoCamera } from "react-icons/io5";
+import { IoSend, IoHappy, IoEllipsisVertical, IoPencil, IoAdd, IoCamera, IoDocument } from "react-icons/io5";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import Picker from 'emoji-picker-react';
@@ -16,14 +16,18 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
   const editableMsg = useRef();
   const addToMsg = useRef(null);
   const imageToMsg = useRef(null)
+  const fileToMsg = useRef(null)
   const addToMsgButton = useRef(null);
+  const fileToSend = useRef(null)
   const [stateAddToMsg, setStateAddToMsg] = useState(false);
   const [stateImgToMsg, setStateImgToMsg] = useState(false);
+  const [stateFileToMsg, setStateFileToMsg] = useState(false);
   const textInput = useRef(null);
   const [arrivalMessage, setArrivalMessage] = useState(null);
   const [modal, setModal] = useState(false)
   const [chatData, setChatData] = useState(currentChat)
   const [baseImage, setBaseImage] = useState("");
+  const [baseFile, setBaseFile] = useState("");
   const resrapidOptions = useRef();
   const [shorts, setShorts] = useState(undefined)
   const toastOptions = {
@@ -35,6 +39,9 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
     draggable: true,
     progress: undefined,
   }
+
+  var pkadmin = currentUser.id
+  var pkuser = currentChat._id
 
   //hook traer los mesajes del usuario actual (si existe) hacia un usuario de chat
   useEffect(async () => {
@@ -87,34 +94,39 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
 
   //funcion seleccionar emoji, lo setea al mensaje
   const handleEmojiClick = (event, emoji) => {
+    const img = '<span><img class="emoji-img" style="width: auto; max-width:16px; margin-bottom:-3px; position:relative" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/'+emoji.unified+'.png"/></span>'
     let message = msg;
-    message += emoji.emoji;
+    message += img;
     setMsg(message)
-    editableMsg.current.innerHTML += emoji.emoji
-    console.log(emoji)
+    editableMsg.current.innerHTML += img
   }
 
   //presiona boton enviar -> funcion enviar mensaje
   const sendChat = () => {
-    // event.preventDefault();    
+    // event.preventDefault();
     if (msg.length > 0) {
       const replaceChatName = msg.replace("{chat_name}", currentChat.user_name);
       handleSendMsg(replaceChatName);
       setMsg("");
-      editableMsg.current.innerHTML = ""
-    }else{
-      textInput.current.focus();
+      setTimeout(() => {
+        editableMsg.current.innerHTML = ''
+      }, 100);
     }
   };
 
   //funcion enviar mensaje asincrona
-  const handleSendMsg = (msg) => {
+  const handleSendMsg = async (msg) => {
     //backend axios envia mensaje
     axios.post(sendMessageRoute, {
       from: currentUser.id,
       to: currentChat._id,
       message: msg,
+    });    
+    const response = await axios.post(getMessagesRoute, {
+      from: currentUser.id,
+      to: currentChat._id,
     });
+    setMessages(response.data);
     //socket emite send-msg
     socket.current.emit("send-msg", {
       to: currentChat._id,
@@ -177,8 +189,10 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
     if (socket.current) {
       socket.current.on("msg-recieve", (msg) => {
         setArrivalMessage({fromSelf:false, message: msg, datetime: time })
+        console.log('recived from chatcontainer')
       })
     }else{
+      console.log('no hay socket.current')
     }
   }, [])
 
@@ -248,6 +262,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
       setBaseImage("");
     }else{
       imageToMsg.current.style.display = 'flex'
+      handleAddToMsgHideShow()
     }
     setStateImgToMsg(!stateImgToMsg)
   }
@@ -257,6 +272,45 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
     handleSendMsg(baseImage)
     handleImgHideShow()
     handleAddToMsgHideShow()
+  }
+  
+  const handleFileHideShow = () => {
+    if (stateFileToMsg===true) {
+      fileToMsg.current.style.display = 'none'
+      setBaseFile("");
+    }else{
+      fileToMsg.current.style.display = 'flex'
+      handleAddToMsgHideShow()
+    }
+    setStateFileToMsg(!stateFileToMsg)
+  }
+  
+  const handleSendFileMsg = async () => {
+    const file = fileToSend.current.files[0];
+    const username = JSON.parse(localStorage.getItem('chatUser')).name
+    if (file) {
+      const fileName = fileToSend.current.files[0].name;
+      const fileNameToPath = username+' - '+fileToSend.current.files[0].name;
+      const tomsg = '<a href="https://chat.ccipperu.com/upload/chatfiles/'+fileNameToPath+'" target="blank">'+fileName+'</a>'
+      
+      const uploadFile = async () => {
+        let formData = new FormData();
+        formData.append("file", fileToSend.current.files[0]);
+        formData.append("filename", fileNameToPath)
+        const local = 'http://localhost/upload/upload.php'
+        const deply = 'https://chat.ccipperu.com/upload/upload.php'
+        await fetch(deply, {
+          method: "POST", 
+          body: formData
+        }); 
+      }
+
+      uploadFile()
+      handleSendMsg(tomsg)
+      handleFileHideShow()
+      handleAddToMsgHideShow()
+      fileToSend.current.value = null
+    }
   }
 
   //funcion detectar si existe shortcode
@@ -280,7 +334,18 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
       resrapidOptions.current.style.display = 'none';
     }
   }
-  
+
+  useEffect(() => {
+    setInterval(async () => {
+      const response = await axios.post(getMessagesRoute, {
+        from: pkadmin,
+        to: pkuser,
+      });
+      setMessages(response.data);
+      console.log('getting msgs evr 5s')
+    }, 5000)
+  }, [])
+
   return (
     <>
     <div className="chat_contact">
@@ -297,7 +362,6 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
         <div className="chat-messages admin">
           <div className="chat-admin">
           {messages.map((message) => {
-            const mensaje = message.message;
             return (
               <div ref={scrollRef} key={uuidv4()}>
                 <div
@@ -334,6 +398,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
           <div className="emoji">
             <button ref={addToMsgButton} onClick={handleAddToMsgHideShow}><IoAdd/></button>
             <div className="addToMsg" ref={addToMsg}>
+              <button onClick={handleFileHideShow}><IoDocument/></button>
               <button onClick={handleImgHideShow}><IoCamera/></button>
               <button onClick={handleEmojiPickerHideShow}><IoHappy/></button>
             </div>
@@ -359,7 +424,9 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
             </div>
             <div className="cteditable" ref={editableMsg} 
                 contentEditable="true" style={{maxHeight:120}}
-                onInput={(e) => {setMsg(editableMsg.current.innerHTML), handleChangeShort(e)}}></div>
+                onInput={(e) => {setMsg(editableMsg.current.innerHTML), handleChangeShort(e)}}
+                onKeyDown={(e) => {e.shiftKey === false && e.key === "Enter" ? sendChat() : null}}
+                ></div>
             <button onClick={sendChat}><IoSend/></button>
           </div>
         </div>
@@ -411,7 +478,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
               </tr>
             </tbody>
           </table>
-        </div>        
+        </div>
         <button className="btn btn-primary" onClick={saveChatData}>Guardar</button>
       </div>
                 
@@ -454,6 +521,7 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
       </Modal>
     </div>
     <div className="addImage" ref={imageToMsg}>
+      <span>Envio de imagen</span>
       <input
         type="file"
         accept="image/jpeg"
@@ -474,6 +542,22 @@ export default function ChatContainer({ currentChat, currentUser, socket, fetchC
         <button className="btn btn-primary" onClick={handleImgHideShow}>x</button>
       }
     </div>
+    <div className="addFile" ref={fileToMsg}>
+        <span>Envio de archivo</span>
+        <input type="file" accept="application/pdf" ref={fileToSend}/>
+        {
+          baseFile !== "" ?
+          <>
+          {/* <Link to={baseFile}>File</Link> */}
+          </>
+          :
+          ''
+        }
+        <div className="btns" id='gbtns'>
+          <button className="btn" onClick={handleFileHideShow}>x</button>
+          <button className="btn btn-primary" onClick={handleSendFileMsg}>Enviar</button>
+        </div>
+      </div>
     <ToastContainer/>
     </>
   )

@@ -1,8 +1,9 @@
 // export const host = "http://aportealaingcivil.com/livechatapi";
-export const host = "http://chatapi.aportealaingcivil.com";
+export const host = "https://chatapi.aportealaingcivil.com";
 export const loginRoute = `${host}/api/auth/login`;
 export const newChatUserRoute = `${host}/api/auth/newchatuser`;
 export const allUsersRoute = `${host}/api/auth/allusers`;
+export const getUserRoute = `${host}/api/auth/getuser`;
 export const getAdminUser = `${host}/api/auth/adminuser`;
 export const sendMessageRoute = `${host}/api/messages/addmsg`;
 export const getMessagesRoute = `${host}/api/messages/getmsg`;
