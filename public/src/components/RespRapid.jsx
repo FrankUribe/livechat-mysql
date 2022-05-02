@@ -1,11 +1,12 @@
 import DataTable from "react-data-table-component";
 import { useState, useEffect, useRef } from "react";
-import { IoTrashBin,IoPencilSharp } from "react-icons/io5";
+import { IoTrashBin,IoPencilSharp, IoHappy } from "react-icons/io5";
 import axios from "axios";
 import { getResrapidRoute,addResrapidRoute,addReraByShortRoute,updateResrapRoute,deleteResrapRoute } from "../utils/APIRoutes";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Modal, { ModalHeader, ModalBody, ModalFooter } from '../components/modal';
+import Picker from 'emoji-picker-react';
 export default function RespRapid() {
   const [resrapid, setResrapid] = useState(undefined)
   const [shorts, setShorts] = useState(undefined)
@@ -13,7 +14,10 @@ export default function RespRapid() {
   const [resRapToEdit, setResRapToEdit] = useState(undefined)
   const [modal, setModal] = useState(false)
   const resrapidOptions = useRef();
-  const editableMsg = useRef();
+  const contentToUpdate = useRef()
+  const editableMsg = useRef();  
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showEmojiPickerEdit, setShowEmojiPickerEdit] = useState(false);
 
   const handleChangeShort = async (event) => {    
     const short = editableMsg.current.innerHTML
@@ -83,25 +87,25 @@ export default function RespRapid() {
     }
   }
 
-  // const handleChangeResRapEit = (event) => {
-  //   setResRapToEdit({ ...resRapToEdit, [event.target.name]: event.target.value })
-  // }
+  const handleUpdateShortCode = (event) => {
+    setResRapToEdit({ ...resRapToEdit, rera_short: event.target.value })
+  }
 
-  // const updateResRap = async () => {
-  //   setModal(false)
-  //   const { data } = await axios.post(updateResrapRoute, {
-  //     short: resRapToEdit.rera_short,
-  //     text: resRapToEdit.rera_text,
-  //     id: resRapToEdit._id
-  //   });
-  //   if (data.status === false) {
-  //     toast.error('Algo ha salido mal, no se ha podido editar', toastOptions)
-  //   }
-  //   if (data.status === true) {
-  //     getResRapid()
-  //     setResRapToEdit(undefined)
-  //   }
-  // }
+  const updateResRap = async () => {
+    setModal(false)
+    const { data } = await axios.post(updateResrapRoute, {
+      short: resRapToEdit.rera_short,
+      text: contentToUpdate.current.innerHTML,
+      id: resRapToEdit._id
+    });
+    if (data.status === false) {
+      toast.error('Algo ha salido mal, no se ha podido editar', toastOptions)
+    }
+    if (data.status === true) {
+      getResRapid()
+      setResRapToEdit(undefined)
+    }
+  }
 
   const deleteResRap = async (id) => {
     const { data } = await axios.post(deleteResrapRoute, {id});
@@ -111,6 +115,44 @@ export default function RespRapid() {
     if (data.status === true) {
       getResRapid()
     }
+  }
+
+  //funcion al presionar boton de emoji, abre modal
+  const handleEmojiPickerHideShow = () => {
+    setShowEmojiPicker(!showEmojiPicker)
+  }
+
+  //funcion al presionar caja de texto, cierra modal emoji
+  const handleEmojiPickerHide = () => {
+    setShowEmojiPicker(false)
+  }
+
+  //funcion al presionar boton de emoji, abre modal
+  const handleEmojiPickerHideShowEdit = () => {
+    setShowEmojiPickerEdit(!showEmojiPickerEdit)
+  }
+
+  //funcion al presionar caja de texto, cierra modal emoji
+  const handleEmojiPickerHideEdit = () => {
+    setShowEmojiPickerEdit(false)
+  }
+
+  //funcion seleccionar emoji, lo setea al mensaje
+  const handleEmojiClick = (event, emoji) => {
+    const img = '<span><img class="emoji-img" style="width: auto; max-width:16px; margin-bottom:-3px; position:relative" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/'+emoji.unified+'.png"/></span>'
+    let message = msg;
+    message += img;
+    // setMsg(message)
+    document.getElementById('cteditablecreate').innerHTML += img
+  }
+  
+  //funcion seleccionar emoji, lo setea al mensaje
+  const handleEmojiClickEdit = (event, emoji) => {
+    const img = '<span><img class="emoji-img" style="width: auto; max-width:16px; margin-bottom:-3px; position:relative" src="https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/'+emoji.unified+'.png"/></span>'
+    let message = msg;
+    message += img;
+    // setMsg(message)
+    contentToUpdate.current.innerHTML += img
   }
 
   //hook cada vez que se de un click se cierre el modal, solo si el modal esta abierto
@@ -129,15 +171,20 @@ export default function RespRapid() {
     <div className="controller">
       <div className="content">
         <div className="form">
-          <div className="card">
+          <div className="card resrap">
             <h4>Nuevo</h4>
-            <input type="text" placeholder="/hola" name="short" onChange={(e) => setInputshort(e.target.value)} value={inputshort}/>
+            <input type="text" placeholder="/hola" name="short" onChange={(e) => setInputshort(e.target.value)} value={inputshort} onSelect={(e) => handleEmojiPickerHide()}/>
             {/* <textarea rows="10" name="text" onChange={(e)=>handleChange(e)} value={values.text}></textarea> */}
             <div className="cteditable" id="cteditablecreate"
                 contentEditable="true"
-                style={{maxHeight:'300px'}}
-                onInput={(e) => setInputcontent(e.target.innerHTML)}></div>
-            <button className="btn btn-primary" onClick={(event) => handleSubmit(event)}>Crear</button>
+                style={{minHeight:'200px', maxHeight:'200px'}}
+                onInput={(e) => {setInputcontent(e.target.innerHTML), handleEmojiPickerHide()}}
+                onClick={(e) => handleEmojiPickerHide()}></div>
+            <div className="btns" style={{display:'flex', justifyContent:'space-between'}}>
+              <button className="btn" onClick={handleEmojiPickerHideShow} style={{color:'#666', display:'flex', flexDirection:'column', alignItems:'center', fontSize:'16px'}}><IoHappy/></button>
+              <button className="btn btn-primary" onClick={(event) => {handleSubmit(event), handleEmojiPickerHide()}}>Crear</button>
+            </div>
+            {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick}/>}
           </div>
           <div className="inputPreview">
             <div className="card resrapidOptions" ref={resrapidOptions} style={{padding:'10px'}}>
@@ -182,7 +229,7 @@ export default function RespRapid() {
                 name:"Opciones",
                 cell: row => (
                   <>
-                  {/* <button onClick={() => {setResRapToEdit(row), setModal(true)}} style={{padding:'4px 6px 1px', color:'#007dff', background:'none', borderStyle:'none', cursor:'pointer'}}><IoPencilSharp/></button> */}
+                  <button onClick={() => {setResRapToEdit(row), setModal(true)}} style={{padding:'4px 6px 1px', color:'#007dff', background:'none', borderStyle:'none', cursor:'pointer'}}><IoPencilSharp/></button>
                   <button onClick={() => deleteResRap(row._id)} style={{padding:'4px 6px 1px', color:'#c51f1f', background:'none', borderStyle:'none', cursor:'pointer'}}><IoTrashBin/></button>
                   </>
                 ),
@@ -208,7 +255,7 @@ export default function RespRapid() {
           </div>
       </div>
       <Modal show={modal}>
-        <div className="modal-dialog" style={{width: '400px'}}>
+        <div className="modal-dialog modaleditresrap" style={{width: '400px'}}>
           {
             resRapToEdit ? (
               <>
@@ -217,13 +264,20 @@ export default function RespRapid() {
               </ModalHeader>
               <ModalBody>
                 <div className="modal-form">
-                  <input type="text" name="rera_short" onChange={(e)=>handleChangeResRapEit(e)} value={resRapToEdit.rera_short}/>
-                  <textarea rows="10" name="rera_text" onChange={(e)=>handleChangeResRapEit(e)} value={resRapToEdit.rera_text}></textarea>
+                  <input type="text" onChange={(e)=>handleUpdateShortCode(e)} value={resRapToEdit.rera_short} onClick={(e) => handleEmojiPickerHideEdit()}/>
+                  <div className="cteditable" ref={contentToUpdate}
+                    contentEditable="true" style={{minHeight:'200px',maxHeight:'200px'}}
+                    suppressContentEditableWarning={true}
+                    dangerouslySetInnerHTML={{__html: resRapToEdit.rera_text}}
+                    onClick={(e) => handleEmojiPickerHideEdit()}>
+                  </div>
+                  <button className="btn" onClick={handleEmojiPickerHideShowEdit} style={{color:'#666', display:'flex', flexDirection:'column', alignItems:'center', fontSize:'16px', width:'60px'}}><IoHappy/></button>
+                  {showEmojiPickerEdit && <Picker onEmojiClick={handleEmojiClickEdit}/>}
                 </div>
               </ModalBody>
               <ModalFooter>
-                <button className='btn' onClick={() => setModal(false)}>No, cancelar</button>
-                <button className='btn btn-primary' onClick={() => updateResRap()}>Si, actualizar</button>
+                <button className='btn' onClick={() => {setModal(false), handleEmojiPickerHideEdit()}}>No, cancelar</button>
+                <button className='btn btn-primary' onClick={() => {updateResRap(), handleEmojiPickerHideEdit()}}>Si, actualizar</button>
               </ModalFooter>
               </>
             ):(

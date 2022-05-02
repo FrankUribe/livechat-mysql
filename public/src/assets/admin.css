@@ -633,3 +633,14 @@ input[type=time] {
   width: auto;
   max-width: 100%;
 }
+
+.resrap .emoji-picker-react{
+  position: absolute;
+  margin-top: 330px;
+  box-shadow: none;
+}
+.modaleditresrap .emoji-picker-react{
+  position: absolute;
+  margin-top: -55px;
+  box-shadow: none;
+}

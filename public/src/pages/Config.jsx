@@ -3,6 +3,7 @@ import { IoCodeSlashOutline,IoTimerOutline,IoPodiumOutline,IoPeopleOutline,IoPer
 import { useState } from "react";
 import RespRapid from '../components/RespRapid';
 import Schedule from '../components/Schedule';
+import Acount from '../components/Acount';
 export default function Config() {
   const [control, setControl] = useState(undefined);
   const handleControl = (val) => {
@@ -35,11 +36,7 @@ export default function Config() {
           </>
         )
       case "micuenta":
-        return (
-          <>
-          <p>Mi cuenta</p>
-          </>
-        )
+        return <Acount/>
       default: return <h2>Configuración</h2>
     }
   }

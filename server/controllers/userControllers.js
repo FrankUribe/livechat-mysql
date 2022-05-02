@@ -60,7 +60,7 @@ module.exports.getAdminUser = async (req, res, next) => {
 
 module.exports.getUser = async (req, res, next) => {
   try {
-    connection.query("SELECT _id, user_name FROM tb_users WHERE _id = '"+req.body.id+"'", (error, result) => {
+    connection.query("SELECT * FROM tb_users WHERE _id = '"+req.body.id+"'", (error, result) => {
       if (error) {
         return res.json({ msg: "Error en la consulta", status: false });
       }else{
